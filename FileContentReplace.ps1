@@ -1,7 +1,7 @@
 ﻿[CmdletBinding()]
 <#
 .SYNOPSIS
-Script for replace any content in the text file.
+Script for replace any content in the text file. 
 .DESCRIPTION
 For remote startup, use Invoke-Command -ComputerName Server01, Server02 -FilePath .\FileContentReplace.ps1 -Credential (Get-Credential)
 Example
