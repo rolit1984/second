@@ -9,11 +9,11 @@ Example
 #>
     param
     (
-        #[Parameter(Mandatory, HelpMessage = "Please enter the path to file.")]
+        [Parameter(Mandatory, HelpMessage = "Please enter the path to file.")]
         [ValidateNotNullOrEmpty()]
         [string]$PathToFile,
 
-        #[Parameter(Mandatory, HelpMessage = "Please enter the path for backup file.")]
+        [Parameter(Mandatory, HelpMessage = "Please enter the path for backup file.")]
         [ValidateNotNullOrEmpty()]
         [string]$BackUpPathFile,
 
