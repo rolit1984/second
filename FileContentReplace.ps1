@@ -11,7 +11,7 @@ Example
     (
         [Parameter(Mandatory, HelpMessage = "Please enter the path to file.")]
         [ValidateNotNullOrEmpty()]
-        [string]$PathToFile,
+        [string]$PathToFile, 
 
         [Parameter(Mandatory, HelpMessage = "Please enter the path for backup file.")]
         [ValidateNotNullOrEmpty()]
