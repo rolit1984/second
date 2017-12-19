@@ -1,0 +1,122 @@
+﻿{
+  "Parameters": {
+    "AMI": {
+      "Description": "AMI identificator",
+      "Type": "String"
+      },
+
+      "EC2Type": {
+      "Type": "String"
+      },
+      
+      "KeyPairName": {
+      "Type": "String"
+      }
+
+
+},
+
+"Resources": {
+
+"LaunchConfig" : {
+                 "Type" : "AWS::AutoScaling::LaunchConfiguration",
+                 "Properties" : {
+                 "AssociatePublicIpAddress" : "true",
+                 "ImageId" : { "Ref" : "AMI" },
+                 "InstanceMonitoring" : "false",
+                 "InstanceType" : { "Ref" : "EC2Type" },
+                 "KeyName" : { "Ref" : "KeyPairName" },
+                 "PlacementTenancy" : "default",
+                 "SecurityGroups" : [ { "Fn::ImportValue" : "DefaultSecurityGroup" }],
+                 
+                 "UserData" : {"Fn::Base64" : { "Fn::Join" : ["", [
+                     "#!/bin/bash -xe\n",
+                     "sudo yum install httpd -y\n",
+                     "sudo service httpd start\n",
+                     "sudo chkconfig httpd on\n",
+                     "sudo touch /var/www/html/index.html\n",
+                     "sudo hostname > /var/www/html/index.html\n",
+                     "sudo touch /var/www/html/health.html\n",
+                     "sudo echo 'Health' > /var/www/html/health.html\n",
+                     "sudo service httpd restart\n",
+                     "echo 'Mashka31333' | sudo passwd --stdin ec2-user\n",
+                     "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config\n",
+                     "sudo service sshd restart\n"
+                 ]]}}
+                 }
+                 },
+
+"AutoScale"   : {
+                "Type" : "AWS::AutoScaling::AutoScalingGroup",
+                "Properties" : {
+                "HealthCheckType" : "ELB",
+                "HealthCheckGracePeriod" : "300",
+                "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
+                "LoadBalancerNames" : [ { "Fn::ImportValue" : "LoadBalancerName" } ],
+                "MaxSize" : "2",
+                "MinSize" : "2",
+                "Tags" : [ { "Key" : "Name", "Value" : "AutoScale", "PropagateAtLaunch" : "false"} ],
+                "VPCZoneIdentifier":[{ "Fn::ImportValue" : "PublicSubnetName" }]
+                }
+                },
+                
+                "CPUAlarmHigh": {
+                "Type": "AWS::CloudWatch::Alarm",
+                "Properties": {
+                "AlarmDescription": "Scale-up",
+                "MetricName": "CPUUtilization",
+                "Namespace": "AWS/EC2",
+                "Statistic": "Average",
+                "Period": "300",
+                "EvaluationPeriods": "1",
+                "Threshold": "20",
+                "AlarmActions": [ { "Ref": "ScaleUpPolicy" } ],
+                "Dimensions": [{
+                "Name": "AutoScalingGroupName",
+                "Value": { "Ref": "AutoScale" }
+                }],
+                "ComparisonOperator": "GreaterThanThreshold"
+                }
+                },
+                
+                "CPUAlarmLow": {
+                "Type": "AWS::CloudWatch::Alarm",
+                "Properties": {
+                "AlarmDescription": "Scale-down",
+                "MetricName": "CPUUtilization",
+                "Namespace": "AWS/EC2",
+                "Statistic": "Average",
+                "Period": "300",
+                "EvaluationPeriods": "1",
+                "Threshold": "5",
+                "AlarmActions": [ { "Ref": "ScaleDownPolicy" } ],
+                "Dimensions": [{
+                "Name": "AutoScalingGroupName",
+                "Value": { "Ref": "AutoScale" }
+                }],
+                "ComparisonOperator": "LessThanThreshold"
+                }
+                },
+
+                "ScaleUpPolicy" : {
+                "Type" : "AWS::AutoScaling::ScalingPolicy",
+                "Properties" : {
+                "AdjustmentType" : "ChangeInCapacity",
+                "AutoScalingGroupName" : { "Ref" : "AutoScale" },
+                "Cooldown" : "60",
+                "ScalingAdjustment" : "1"
+                }
+                },
+
+                "ScaleDownPolicy" : {
+                "Type" : "AWS::AutoScaling::ScalingPolicy",
+                "Properties" : {
+                "AdjustmentType" : "ChangeInCapacity",
+                "AutoScalingGroupName" : { "Ref" : "AutoScale" },
+                "Cooldown" : "60",
+                "ScalingAdjustment" : "-1"
+                }
+                }
+                
+}
+}

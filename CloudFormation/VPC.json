@@ -1,0 +1,183 @@
+﻿{
+"Parameters" : {
+               "VPCName" : {
+               "Description" : "VPC Name",
+               "Type" : "String"
+                },
+                "VPCCIDR" : {
+                "Description" : "VPC cidr",
+                "Type" : "String"
+                },
+                "SubnetNamePrefix" : {
+                "Description" : "Subnet name prefix",
+                "Type" : "String"
+                },
+                "PublicSubnetCIDR" : {
+                "Description" : "Subnet cidr",
+                "Type" : "String"
+                },
+                "PrivateSubnetCIDR" : {
+                "Description" : "Subnet cidr",
+                "Type" : "String"
+                },
+                "GatewayName" : {
+                "Description" : "Gateway name",
+                "Type" : "String"
+                }
+                },
+"Resources": {  
+                "VPC": {
+                "Type": "AWS::EC2::VPC",
+                "Properties": {
+                "CidrBlock": { "Ref" : "VPCCIDR" },
+                "InstanceTenancy": "default",
+                "EnableDnsSupport": "true",
+                "EnableDnsHostnames": "true",
+                "Tags" : [ {"Key" : "Name", "Value" : { "Ref" : "VPCName" }}]
+                }
+                },
+
+                "PublicSubnet": {
+                "Type": "AWS::EC2::Subnet",
+                "Properties": {
+                "CidrBlock": { "Ref": "PublicSubnetCIDR" },
+                "AvailabilityZone": "us-east-1a",
+                "VpcId": { "Ref": "VPC" },
+                "Tags" : [ {"Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "SubnetNamePrefix" }, { "Ref": "PublicSubnetCIDR" }] ] }}]
+                }
+                },
+
+                "PrivateSubnet": {
+                "Type": "AWS::EC2::Subnet",
+                "Properties": {
+                "CidrBlock": { "Ref": "PrivateSubnetCIDR" },
+                "AvailabilityZone": "us-east-1a",
+                "VpcId": { "Ref": "VPC" },
+                "Tags" : [ {"Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "SubnetNamePrefix" }, { "Ref": "PrivateSubnetCIDR" }] ] }}]
+                }
+                },
+
+                "igw": {
+                "Type": "AWS::EC2::InternetGateway",
+                "Properties": {
+                "Tags" : [ {"Key" : "Name", "Value" : { "Ref" : "GatewayName" }}]
+                }
+                },
+
+                "igwattach": {
+                "Type": "AWS::EC2::VPCGatewayAttachment",
+                "Properties": {
+                "VpcId": {"Ref": "VPC"},
+                "InternetGatewayId": {"Ref": "igw"}
+                }
+                },
+
+                "RouteTable" : {
+                "Type" : "AWS::EC2::RouteTable",
+                "Properties" : {
+                "VpcId" : { "Ref" : "VPC" },
+                "Tags" : [ { "Key" : "Name", "Value" : "Internet Access" } ]
+                }
+                },
+
+                "RouteToInternet" : {
+                "Type" : "AWS::EC2::Route",
+                "DependsOn" : "igw",
+                "Properties" : {
+                "RouteTableId" : { "Ref" : "RouteTable" },
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "GatewayId" : { "Ref" : "igw" }
+                }
+                },
+
+                "RouteTableAssociation" : {
+                "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+                "Properties" : {
+                "SubnetId" : { "Ref" : "PublicSubnet" },
+                "RouteTableId" : { "Ref" : "RouteTable" }
+                }
+                },
+
+                "DefSecurityGroup": {
+                "Type": "AWS::EC2::SecurityGroup",
+                "Properties": {
+                "GroupDescription": "Enable SSH",
+                "VpcId" : {"Ref" : "VPC"},
+                "SecurityGroupIngress": [
+                {
+                "IpProtocol": "tcp",
+                "FromPort": "22",
+                "ToPort": "22",
+                "CidrIp": "0.0.0.0/0"
+                }],
+                "Tags" : [ {"Key" : "Name", "Value" : "Default SG"}]
+                }
+                },
+
+                "LBSecurityGroup": {
+                "Type": "AWS::EC2::SecurityGroup",
+                "Properties": {
+                "GroupDescription": "HTTP LB",
+                "VpcId" : {"Ref" : "VPC"},
+                "SecurityGroupIngress": [
+                {
+                "IpProtocol": "tcp",
+                "FromPort": "80",
+                "ToPort": "80",
+                "CidrIp": "0.0.0.0/0"
+                }],
+                "Tags" : [ {"Key" : "Name", "Value" : "LB SG"}]
+                }
+                },
+
+                "LoadBalancer": {
+                "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+                "Properties": {
+                "Subnets": [ { "Ref" : "PublicSubnet"} ],
+                "Scheme" : "internet-facing",
+                "SecurityGroups" : [ { "Ref" : "LBSecurityGroup"} ],
+                "Listeners": [{
+                "LoadBalancerPort": "80",
+                "InstancePort": "80",
+                "Protocol": "HTTP"
+                }],
+                "HealthCheck": {
+                "Target": "HTTP:80/health.html",
+                "HealthyThreshold": "3",
+                "UnhealthyThreshold": "5",
+                "Interval": "10",
+                "Timeout": "5"
+                }
+                }
+                }
+
+
+},
+"Outputs": {
+           "DefaultSecurityGroup" : {
+           "Value" : { "Ref" : "DefSecurityGroup"},
+           "Export" : { "Name" : "DefaultSecurityGroup"}
+           },
+
+           "PrivateSubnet" : {
+           "Value" : { "Ref" : "PrivateSubnet"},
+           "Export" : { "Name" : "PrivateSubnetName"}
+           },
+           
+           "PublicSubnet" : {
+           "Value" : { "Ref" : "PublicSubnet"},
+           "Export" : { "Name" : "PublicSubnetName"}
+           },
+           
+           "VPC" : {
+           "Value" : { "Ref" : "VPC"},
+           "Export" : { "Name" : "VPCName"}
+           },
+
+           "LoadBalancer" : {
+           "Value" : { "Ref" : "LoadBalancer"},
+           "Export" : { "Name" : "LoadBalancerName"}
+           }
+
+}
+}
