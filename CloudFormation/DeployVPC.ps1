@@ -7,8 +7,14 @@
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string]$SecretKey
+        [string]$SecretKey,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]$PathToTemplate
     )
+
+$content = [string]$content=(Get-Content -path $PathToTemplate)
 
 New-CFNStack -StackName "AutoStack" `
              -TemplateBody $content `
