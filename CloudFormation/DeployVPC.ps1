@@ -18,7 +18,7 @@
     )
 
 $content = [string]$content=(Get-Content -path $PathToTemplate)
-$timeoutminutes=2
+$timeoutminutes=2 
 $timeoutfinish=(get-date).addminutes($timeoutminutes)
 
 New-CFNStack -StackName $StackName `
