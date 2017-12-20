@@ -18,7 +18,7 @@
     )
 
 $content = [string]$content=(Get-Content -path $PathToTemplate)
-$timeoutminutes=2
+$timeoutminutes=1
 $timeoutfinish=(get-date).addminutes($timeoutminutes)
 
 New-CFNStack -StackName $StackName `
@@ -31,13 +31,13 @@ while ($stackinfo.StackStatus -ne "CREATE_COMPLETE")
         if ((get-date) -ge $timeoutfinish) {
             Remove-CFNStack -StackName $StackName -AccessKey $AccessKey -SecretKey $SecretKey -Region $Region -Confirm:$false
             Write-Host "===================================================================================================="
-            throw "Skip deployment by timeout. Current timeout is $timeoutminutes minutes"
+            throw "Skip deployment by timeout. Current timeout is $timeoutminutes minutes."
             Write-Host "===================================================================================================="
             return
         }
         else {
             $stackinfo=Get-CFNStack -StackName $StackName -AccessKey $AccessKey -SecretKey $SecretKey -Region $Region
-            Write-Host "Proccess of deployment is running. Please wait. Current status is $($stackinfo.StackStatus)"
+            Write-Host "Proccess of deployment is running. Please wait. Current status is $($stackinfo.StackStatus)."
             Start-Sleep -Seconds 10
         }
     }
