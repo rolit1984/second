@@ -29,8 +29,10 @@ New-CFNStack -StackName $StackName `
 while ($stackinfo.StackStatus -ne "CREATE_COMPLETE")
     {
         if ((get-date) -ge $timeout) {
-            Remove-CFNStack -StackName $StackName -AccessKey $AccessKey -SecretKey $SecretKey -Region $Region 
+            Remove-CFNStack -StackName $StackName -AccessKey $AccessKey -SecretKey $SecretKey -Region $Region -Confirm:$false
+            Write-Host "===================================================================================================="
             throw "Skip deployment by timeout. Current timeout is $timeoutminutes minutes"
+            Write-Host "===================================================================================================="
             return
         }
         else {
