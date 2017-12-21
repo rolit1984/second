@@ -11,7 +11,7 @@
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string]$PathToTemplate,
+        [string]$PathToTemplateScale,
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
