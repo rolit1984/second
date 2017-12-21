@@ -53,8 +53,8 @@
                 "HealthCheckGracePeriod" : "300",
                 "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
                 "LoadBalancerNames" : [ { "Fn::ImportValue" : "LoadBalancerName" } ],
-                "MaxSize" : "2",
-                "MinSize" : "2",
+                "MaxSize" : "1",
+                "MinSize" : "1",
                 "Tags" : [ { "Key" : "Name", "Value" : "AutoScale", "PropagateAtLaunch" : "false"} ],
                 "VPCZoneIdentifier":[{ "Fn::ImportValue" : "PublicSubnetName" }]
                 }
