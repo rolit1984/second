@@ -26,7 +26,7 @@ New-CFNStack -StackName $StackName `
              -Parameter @( @{ ParameterKey="GatewayName"; ParameterValue="Gateway"}, @{ ParameterKey="VPCName"; ParameterValue="VPC"}, @{ ParameterKey="PrivateSubnetCIDR"; ParameterValue="172.16.0.0/24"}, @{ ParameterKey="PublicSubnetCIDR"; ParameterValue="172.16.1.0/24"}, @{ ParameterKey="SubnetNamePrefix"; ParameterValue="SubNet"}, @{ ParameterKey="VPCCIDR"; ParameterValue="172.16.0.0/23"}) `
              -DisableRollback $true -AccessKey $AccessKey -secretkey $SecretKey -region $Region
 
-while (($stackinfo.StackStatus -ne "CREATE_COMPLETE") -or ($stackinfo.StackStatus -ne "CREATE_FAILED"))
+while (($stackinfo.StackStatus -ne "CREATE_COMPLETE") -and ($stackinfo.StackStatus -ne "CREATE_FAILED"))
     {
     $stackinfo=Get-CFNStack -StackName $StackName -AccessKey $AccessKey -SecretKey $SecretKey -Region $Region
 

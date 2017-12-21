@@ -34,7 +34,7 @@ New-CFNStack -StackName $StackName `
              -Parameter @( @{ ParameterKey="AMI"; ParameterValue="$AMI"}, @{ ParameterKey="EC2Type"; ParameterValue="$EC2Type"}, @{ ParameterKey="KeyPairName"; ParameterValue="CloudFormation"}) `
              -DisableRollback $true -AccessKey $AccessKey -secretkey $SecretKey -region $Region
 
-while (($stackinfo.StackStatus -ne "CREATE_COMPLETE") -or ($stackinfo.StackStatus -ne "CREATE_FAILED"))
+while (($stackinfo.StackStatus -ne "CREATE_COMPLETE") -and ($stackinfo.StackStatus -ne "CREATE_FAILED"))
     {
     $stackinfo=Get-CFNStack -StackName $StackName -AccessKey $AccessKey -SecretKey $SecretKey -Region $Region
         if ((get-date) -ge $timeoutfinish) {
