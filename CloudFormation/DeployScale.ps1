@@ -25,7 +25,7 @@
         [string]$Region="us-east-1"
     )
 
-$content = [string]$content=(Get-Content -path $PathToTemplate)
+$content = [string]$content=(Get-Content -path $PathToTemplateScale)
 $timeoutminutes=2 
 $timeoutfinish=(get-date).addminutes($timeoutminutes)
 
