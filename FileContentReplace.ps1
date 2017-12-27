@@ -2,8 +2,6 @@
 <#
 .SYNOPSIS
 Script for replace any content in the text file.
-Example
-.\FileContentReplace.ps1 -PathToFile D:\test.txt -BackUpPathFile D:\backtest.txt -PatternForReplace "\d" -ReplaceContent "replace"
 #>
     param
     (
@@ -25,10 +23,24 @@ Example
 
         [Parameter(Mandatory, HelpMessage = "Specify the pattern for replace. Do not use quotes.")]
         [ValidateNotNullOrEmpty()]
-        [string]$PatternForReplace
+        [string]$PatternForReplace,
+
+        [Parameter(Mandatory, HelpMessage = "Specify the kind of pattern. Regular expression or simple string")]
+        [ValidateNotNullOrEmpty()]
+        [ValidateSet("regex","string")]
+        [string]$KindOfPattern
     )
 
     Invoke-Command -ComputerName $ComputerName -ScriptBlock {
+
+    if ($using:KindOfPattern -notlike "regex") {
+        Write-Host "================= Pattern is simple string. Escape special characters if it's necessary ================="
+        $patternforreplace=[regex]::Escape($using:PatternForReplace)
+    }
+    else {
+        Write-Host "========================== Pattern is regular expression =============================="
+        $patternforreplace=$using:PatternForReplace
+    }
 
     # Check file exists
     $fileexists=[System.IO.file]::Exists("$using:PathToFile")
@@ -36,7 +48,7 @@ Example
 
             # Get current file content
             $currentallfilecontent=[System.IO.File]::ReadAllText("$using:PathToFile")
-            $newfilecontent = $currentallfilecontent -replace $using:PatternForReplace,$using:ReplaceContent
+            $newfilecontent = $currentallfilecontent -replace $patternforreplace,$using:ReplaceContent
 
             # Create backup in backup location
             [System.IO.file]::Copy("$using:PathToFile","$using:BackUpPathFile")
