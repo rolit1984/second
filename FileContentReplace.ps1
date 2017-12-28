@@ -50,6 +50,11 @@ Script for replace any content in the text file.
             $currentallfilecontent=[System.IO.File]::ReadAllText("$using:PathToFile")
             $newfilecontent = [regex]::Replace($currentallfilecontent, "$patternforreplace", "$using:ReplaceContent")
 
+                if ($currentallfilecontent -eq $newfilecontent) {
+                    Write-Host "========================== Nothing to replace for this pattern =========================="
+                    break
+                }
+
             # Update backup file path and check folder exists
             $backuppathfile=[regex]::split($using:BackUpPathFile, "\\")
             $pathcounts=0..($backuppathfile.count-1)
@@ -91,8 +96,8 @@ Script for replace any content in the text file.
 
                     # Check correct replace
                     $filecontentafterreplace=[System.IO.File]::ReadAllText("$using:PathToFile")
-                        if (($filecontentafterreplace -eq $newfilecontent) -and ($filecontentafterreplace -ne $currentallfilecontent)) {
-                            Write-Host "========================== Replacement in the file $using:PathToFile was successfull. =========================="
+                        if ($filecontentafterreplace -eq $newfilecontent) {
+                            Write-Host "========================== Replacement in the file $using:PathToFile was successfully. =========================="
                             $oldlines=(Compare-Object -ReferenceObject $(Get-Content $using:PathToFile) -DifferenceObject $(Get-Content $backupfullpath) | where {$_.SideIndicator -eq "=>"}).InputObject
                             $newlines=(Compare-Object -ReferenceObject $(Get-Content $using:PathToFile) -DifferenceObject $(Get-Content $backupfullpath) | where {$_.SideIndicator -eq "<="}).InputObject
                             Write-Host "========================== Old lines =========================="
@@ -100,17 +105,14 @@ Script for replace any content in the text file.
                             Write-Host "========================== New lines =========================="
                             $newlines
                         }
-                        elseif ($filecontentafterreplace -eq $currentallfilecontent) {
-                            Write-Host "========================== Nothing to replace for this pattern =========================="    
-                        }
                         else {
                             Write-host "Replacement in the file $using:PathToFile was failed."
-                            return
+                            break
                         }
                 }
                 else {
                     Write-host "Create backup of the file $using:PathToFile failed. Processing stopped."
-                    return
+                    break
                 }
         }
     }
