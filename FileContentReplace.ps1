@@ -91,7 +91,7 @@ Script for replace any content in the text file.
 
                     # Check correct replace
                     $filecontentafterreplace=[System.IO.File]::ReadAllText("$using:PathToFile")
-                        if ($filecontentafterreplace -eq $newfilecontent) {
+                        if (($filecontentafterreplace -eq $newfilecontent) -and ($filecontentafterreplace -ne $currentallfilecontent)) {
                             Write-Host "========================== Replacement in the file $using:PathToFile was successfull. =========================="
                             $oldlines=(Compare-Object -ReferenceObject $(Get-Content $using:PathToFile) -DifferenceObject $(Get-Content $backupfullpath) | where {$_.SideIndicator -eq "=>"}).InputObject
                             $newlines=(Compare-Object -ReferenceObject $(Get-Content $using:PathToFile) -DifferenceObject $(Get-Content $backupfullpath) | where {$_.SideIndicator -eq "<="}).InputObject
@@ -99,6 +99,9 @@ Script for replace any content in the text file.
                             $oldlines
                             Write-Host "========================== New lines =========================="
                             $newlines
+                        }
+                        elseif ($filecontentafterreplace -eq $currentallfilecontent) {
+                            Write-Host "========================== Nothing to replace for this pattern =========================="    
                         }
                         else {
                             Write-host "Replacement in the file $using:PathToFile was failed."
