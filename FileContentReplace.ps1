@@ -48,7 +48,7 @@ Script for replace any content in the text file.
 
             # Get current file content
             $currentallfilecontent=[System.IO.File]::ReadAllText("$using:PathToFile")
-            $newfilecontent = $currentallfilecontent -replace $patternforreplace,$using:ReplaceContent
+            $newfilecontent = [regex]::Replace($currentallfilecontent, "$patternforreplace", "$using:ReplaceContent")
 
             # Update backup file path and check folder exists
             $backuppathfile=[regex]::split($using:BackUpPathFile, "\\")
