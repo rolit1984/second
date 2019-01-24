@@ -1,4 +1,5 @@
-﻿workflow CreateAWSAMI {
+-AzureRM
+workflow CreateAWSAMI {
 <#
 .SYNOPSIS
 Script for creating AWS AMI image.
